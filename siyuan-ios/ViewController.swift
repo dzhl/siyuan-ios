@@ -126,7 +126,11 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
       name: UIApplication.didBecomeActiveNotification, object: nil)
     waitFotKernelHttpServing()
     ViewController.syWebView.load(URLRequest(url: url))
-
+    #if DEBUG
+      if #available(iOS 16.4, *) {
+          ViewController.syWebView.isInspectable = true
+      }
+    #endif
     view.addSubview(ViewController.syWebView)
   }
 

@@ -537,45 +537,28 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
 
 extension UIColor {
   convenience init?(hexString: String?, isDarkMode: Bool) {
-    var input: String! = (hexString ?? "")
+    let input = (hexString ?? "")
       .replacingOccurrences(of: "#", with: "")
       .uppercased()
     var alpha: CGFloat = 1.0
     var red: CGFloat = 0
-    var blue: CGFloat = 0
     var green: CGFloat = 0
-    switch input.count {
-    case 3 /* #RGB */:
-      red = Self.colorComponent(from: input, start: 0, length: 1)
-      green = Self.colorComponent(from: input, start: 1, length: 1)
-      blue = Self.colorComponent(from: input, start: 2, length: 1)
-      break
-    case 4 /* #ARGB */:
-      alpha = Self.colorComponent(from: input, start: 0, length: 1)
-      red = Self.colorComponent(from: input, start: 1, length: 1)
-      green = Self.colorComponent(from: input, start: 2, length: 1)
-      blue = Self.colorComponent(from: input, start: 3, length: 1)
-      break
-    case 6 /* #RRGGBB */:
+    var blue: CGFloat = 0
+    if input.count == 8 /* #RRGGBBAA */ {
       red = Self.colorComponent(from: input, start: 0, length: 2)
       green = Self.colorComponent(from: input, start: 2, length: 2)
       blue = Self.colorComponent(from: input, start: 4, length: 2)
-      break
-    case 8 /* #AARRGGBB */:
-      alpha = Self.colorComponent(from: input, start: 0, length: 2)
-      red = Self.colorComponent(from: input, start: 2, length: 2)
-      green = Self.colorComponent(from: input, start: 4, length: 2)
-      blue = Self.colorComponent(from: input, start: 6, length: 2)
-      break
-    default:
+      alpha = Self.colorComponent(from: input, start: 6, length: 2)
+    } else {
+      let fallback: String
       if isDarkMode {
-        input = "ffffff"
+        fallback = "ffffff"
       } else {
-        input = "1e1e1e"
+        fallback = "1e1e1e"
       }
-      red = Self.colorComponent(from: input, start: 0, length: 2)
-      green = Self.colorComponent(from: input, start: 2, length: 2)
-      blue = Self.colorComponent(from: input, start: 4, length: 2)
+      red = Self.colorComponent(from: fallback, start: 0, length: 2)
+      green = Self.colorComponent(from: fallback, start: 2, length: 2)
+      blue = Self.colorComponent(from: fallback, start: 4, length: 2)
     }
     self.init(red: red, green: green, blue: blue, alpha: alpha)
   }

@@ -197,8 +197,8 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
       } else {
         isDarkStyle = true
       }
-      let bg = UIColor.init(hexString: String(argument[0]), isDarkMode: isDarkStyle)
-      self.view.backgroundColor = bg
+      self.view.backgroundColor = UIColor.init(
+        hexString: String(argument[0]), isDarkMode: isDarkStyle)
       setNeedsStatusBarAppearanceUpdate()
     case .setClipboard:
       UIPasteboard.general.string = (message.body as! String)

@@ -75,6 +75,12 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
       return
     }
 
+    // 启动/加载阶段 webview 显示的 boot/index.html 与 #loading 蒙层背景恒为深色 #1e1e1e，
+    // 故顶/底条初始也用同色与之衔接；待 webview 完全启动、changeStatusBar 回调到达后
+    // 再由其按思源主题精修为精确主题色与状态栏样式。
+    view.backgroundColor = UIColor(
+      red: 0x1e / 255.0, green: 0x1e / 255.0, blue: 0x1e / 255.0, alpha: 1)
+
     initKernel()
 
     ViewController.syWebView.customUserAgent =
@@ -113,6 +119,14 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
     // show keyboard
     ViewController.syWebView.scrollView.isScrollEnabled = false
     ViewController.syWebView.scrollView.delegate = self
+    // boot 页与 index 的 #loading 蒙层背景恒为深色 #1e1e1e，故 webview 及其滚动视图底色
+    // 也固定为深色，避免 HTML/CSS 渲染前露出默认白底。webview 内容（body 背景不透明）会
+    // 完全覆盖此底色；顶/底条由 changeStatusBar 回调按主题精修。
+    ViewController.syWebView.isOpaque = false
+    ViewController.syWebView.backgroundColor = UIColor(
+      red: 0x1e / 255.0, green: 0x1e / 255.0, blue: 0x1e / 255.0, alpha: 1)
+    ViewController.syWebView.scrollView.backgroundColor = UIColor(
+      red: 0x1e / 255.0, green: 0x1e / 255.0, blue: 0x1e / 255.0, alpha: 1)
     NotificationCenter.default.addObserver(
       self, selector: #selector(keyboardWillChange),
       name: UIResponder.keyboardWillChangeFrameNotification, object: nil)
@@ -183,8 +197,8 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
       } else {
         isDarkStyle = true
       }
-      self.view.backgroundColor = UIColor.init(
-        hexString: String(argument[0]), isDarkMode: isDarkStyle)
+      let bg = UIColor.init(hexString: String(argument[0]), isDarkMode: isDarkStyle)
+      self.view.backgroundColor = bg
       setNeedsStatusBarAppearanceUpdate()
     case .setClipboard:
       UIPasteboard.general.string = (message.body as! String)
@@ -309,6 +323,12 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
   }
 
   @objc func keyboardWillChange(notification: NSNotification) {
+    // Shorthand 作为 modal 弹出时，其键盘不应压缩宿主 webview；否则关闭 modal 后
+    // 若键盘隐藏事件未正常回调，webview 高度无法恢复，导致应用整体上移。
+    if presentedViewController is ShorthandViewController {
+      keyboardShowed = false
+      return
+    }
     keyboardShowed = true
     if GCKeyboard.coalesced != nil {
       if ViewController.syWebView.frame.size.height != view.safeAreaLayoutGuide.layoutFrame.height {
@@ -336,6 +356,10 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
   }
 
   @objc func keyboardWillShow(notification: NSNotification) {
+    // Shorthand modal 期间不向宿主 webview 注入键盘工具栏高度
+    if presentedViewController is ShorthandViewController {
+      return
+    }
     if let keyboardSize =
       (notification.userInfo?[UIResponder.keyboardFrameEndUserInfoKey] as? NSValue)?.cgRectValue
     {
@@ -535,18 +559,28 @@ extension UIColor {
     var red: CGFloat = 0
     var green: CGFloat = 0
     var blue: CGFloat = 0
-    if input.count == 8 /* #RRGGBBAA */ {
+    switch input.count {
+    case 3 /* #RGB */:
+      red = Self.colorComponent(from: input, start: 0, length: 1)
+      green = Self.colorComponent(from: input, start: 1, length: 1)
+      blue = Self.colorComponent(from: input, start: 2, length: 1)
+    case 4 /* #RGBA（CSS Color 4，alpha 在末尾，与 8 位 RRGGBBAA 一致）*/:
+      red = Self.colorComponent(from: input, start: 0, length: 1)
+      green = Self.colorComponent(from: input, start: 1, length: 1)
+      blue = Self.colorComponent(from: input, start: 2, length: 1)
+      alpha = Self.colorComponent(from: input, start: 3, length: 1)
+    case 6 /* #RRGGBB */:
+      red = Self.colorComponent(from: input, start: 0, length: 2)
+      green = Self.colorComponent(from: input, start: 2, length: 2)
+      blue = Self.colorComponent(from: input, start: 4, length: 2)
+    case 8 /* #RRGGBBAA（siyuan rgbaToHex 输出格式）*/:
       red = Self.colorComponent(from: input, start: 0, length: 2)
       green = Self.colorComponent(from: input, start: 2, length: 2)
       blue = Self.colorComponent(from: input, start: 4, length: 2)
       alpha = Self.colorComponent(from: input, start: 6, length: 2)
-    } else {
-      let fallback: String
-      if isDarkMode {
-        fallback = "ffffff"
-      } else {
-        fallback = "1e1e1e"
-      }
+    default:
+      // 非法/空值：退化为与外观方向一致的中性色（亮=白、暗=#1e1e1e）
+      let fallback = isDarkMode ? "1e1e1e" : "ffffff"
       red = Self.colorComponent(from: fallback, start: 0, length: 2)
       green = Self.colorComponent(from: fallback, start: 2, length: 2)
       blue = Self.colorComponent(from: fallback, start: 4, length: 2)

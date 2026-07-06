@@ -126,11 +126,12 @@ class ShorthandViewController: UIViewController {
     ])
   }
 
-  /// 根据当前文本是否有非空内容，统一刷新提交按钮的可用态与样式。
+  /// 根据当前文本是否有非空内容，统一刷新提交按钮的可用态、样式与占位提示。
   private func refreshSubmitButton() {
     let hasContent = !textView.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     submitButton.isEnabled = hasContent
     submitButton.backgroundColor = hasContent ? .systemBlue : .systemGray3
+    placeholderLabel.isHidden = !textView.text.isEmpty
   }
 
   func appendText(_ text: String) {
@@ -185,7 +186,6 @@ class ShorthandViewController: UIViewController {
 extension ShorthandViewController: UITextViewDelegate {
   func textViewDidChange(_ textView: UITextView) {
     refreshSubmitButton()
-    placeholderLabel.isHidden = !textView.text.isEmpty
   }
 }
 

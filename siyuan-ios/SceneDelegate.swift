@@ -148,8 +148,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   }
 
   func sceneDidBecomeActive(_ scene: UIScene) {
-    // Called when the scene has moved from an inactive state to an active state.
-    // Use this method to restart any tasks that were paused (or not yet started) when the scene was inactive.
+    // App Intent（iOS 16+ 快捷指令/Siri，见 ShorthandAppShortcuts）入队的闪念请求：
+    if let text = ShorthandLauncher.consume() {
+      presentShorthand(text: text.isEmpty ? nil : text)
+      return
+    }
     if pendingShorthandShortcut {
       // 本次激活由闪念快捷方式触发，用户确实要进闪念，跳过恢复
       pendingShorthandShortcut = false

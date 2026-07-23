@@ -551,7 +551,7 @@
 				CODE_SIGN_ENTITLEMENTS = "siyuan-ios/siyuan-ios.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = FJT3K7XAD8;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -574,7 +574,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.7.2;
+				MARKETING_VERSION = 3.7.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ld246.siyuan;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
@@ -592,7 +592,7 @@
 				CODE_SIGN_ENTITLEMENTS = "siyuan-ios/siyuan-ios.entitlements";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "";
 				DEVELOPMENT_TEAM = FJT3K7XAD8;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -615,7 +615,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 3.7.2;
+				MARKETING_VERSION = 3.7.3;
 				PRODUCT_BUNDLE_IDENTIFIER = com.ld246.siyuan;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";

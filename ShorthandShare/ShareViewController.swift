@@ -160,6 +160,10 @@ class ShareViewController: UIViewController, UITextViewDelegate {
     private func loadURL(from provider: NSItemProvider) {
         provider.loadItem(forTypeIdentifier: UTType.url.identifier, options: nil) { [weak self] (item, error) in
             guard let self = self, let url = item as? URL else { return }
+            if url.isFileURL {
+                self.appendFile(from: url)
+                return
+            }
             let link = "<" + url.absoluteString + ">"
             DispatchQueue.main.async {
                 self.placeholderLabel.isHidden = true
@@ -195,29 +199,36 @@ class ShareViewController: UIViewController, UITextViewDelegate {
     private func loadFile(from provider: NSItemProvider, typeIdentifier: String) {
         provider.loadFileRepresentation(forTypeIdentifier: typeIdentifier) { [weak self] (url, error) in
             guard let self = self, let url = url else { return }
+            self.appendFile(from: url, typeIdentifier: typeIdentifier)
+        }
+    }
 
-            let rawName = url.lastPathComponent
-            var baseName = Iosk.MobileFilepathBase(rawName)
-            baseName = Iosk.MobileFilterUploadFileName(baseName)
-            let fileName = Iosk.MobileAssetName(baseName)
-            let assetsDir = self.shorthandsDir() + "assets/"
-            try? FileManager.default.createDirectory(atPath: assetsDir, withIntermediateDirectories: true, attributes: nil)
+    /// 将分享来源的临时文件复制到闪念资源目录，避免保存随后失效的 file:// 地址。
+    private func appendFile(from url: URL, typeIdentifier: String? = nil) {
+        let rawName = url.lastPathComponent
+        var baseName = Iosk.MobileFilepathBase(rawName)
+        baseName = Iosk.MobileFilterUploadFileName(baseName)
+        let fileName = Iosk.MobileAssetName(baseName)
+        let assetsDir = shorthandsDir() + "assets/"
+        try? FileManager.default.createDirectory(
+            atPath: assetsDir, withIntermediateDirectories: true, attributes: nil)
 
-            let destURL = URL(fileURLWithPath: assetsDir + fileName)
-            try? FileManager.default.copyItem(at: url, to: destURL)
+        let destURL = URL(fileURLWithPath: assetsDir + fileName)
+        try? FileManager.default.copyItem(at: url, to: destURL)
 
-            let link: String
-            if typeIdentifier == UTType.image.identifier {
-                link = "![" + fileName + "](assets/" + fileName + ")"
-            } else {
-                link = "[" + fileName + "](assets/" + fileName + ")"
-            }
+        let contentType = typeIdentifier.flatMap(UTType.init)
+            ?? UTType(filenameExtension: url.pathExtension)
+        let link: String
+        if contentType?.conforms(to: .image) == true {
+            link = "![" + fileName + "](assets/" + fileName + ")"
+        } else {
+            link = "[" + fileName + "](assets/" + fileName + ")"
+        }
 
-            DispatchQueue.main.async {
-                self.placeholderLabel.isHidden = true
-                self.textView.text += link + "\n\n"
-                self.refreshSubmitButton()
-            }
+        DispatchQueue.main.async {
+            self.placeholderLabel.isHidden = true
+            self.textView.text += link + "\n\n"
+            self.refreshSubmitButton()
         }
     }
 

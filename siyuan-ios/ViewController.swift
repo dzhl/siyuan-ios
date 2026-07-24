@@ -33,6 +33,7 @@ private enum ScriptMessageName: String {
   case exit
   case sendNotification
   case cancelNotification
+  case vibrate
 }
 
 class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelegate,
@@ -114,6 +115,8 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
       self, name: ScriptMessageName.sendNotification.rawValue)
     ViewController.syWebView.configuration.userContentController.add(
       self, name: ScriptMessageName.cancelNotification.rawValue)
+    ViewController.syWebView.configuration.userContentController.add(
+      self, name: ScriptMessageName.vibrate.rawValue)
 
     // open url
     ViewController.syWebView.navigationDelegate = self
@@ -278,6 +281,8 @@ class ViewController: UIViewController, WKNavigationDelegate, UIScrollViewDelega
       }
     case .cancelNotification:
       cancelNotification(id: message.body as! Int)
+    case .vibrate:
+      UIImpactFeedbackGenerator(style: .light).impactOccurred()
     default:
       return
     }
